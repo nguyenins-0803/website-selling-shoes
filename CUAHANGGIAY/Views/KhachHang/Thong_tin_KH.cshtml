@@ -1,0 +1,156 @@
+﻿@model CUAHANGGIAY.Models.KHACHHANG
+
+@{
+    ViewBag.Title = "Sửa Thông Tin Cá Nhân";
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+}
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.SuccessMessage
+    </div>
+}
+
+<header>
+    <h2 class="account-title">Thông Tin Tài Khoản</h2>
+    <div>
+        <h3 class="personal-info-title">Thông tin cá nhân</h3>
+    </div>
+</header>
+
+<main>
+    <div class="form-container">
+        <form method="post" action="/KhachHang/UpdateInfo">
+            <div class="form-group">
+                <label for="tenKH">Họ tên:</label>
+                <input type="text" id="tenKH" name="tenKH" value="@Model.TenKH" required />
+            </div>
+            <div class="form-group">
+                <label for="gmail">Địa chỉ gmail:</label>
+                <input type="email" id="gmail" name="gmail" value="@Model.Gmail" required />
+            </div>
+            <div class="form-group">
+                <label for="diaChi">Địa chỉ nhà:</label>
+                <input type="text" id="diaChi" name="diaChi" value="@Model.DiaChi" required />
+            </div>
+
+            <div class="form-group">
+                <label for="sdt">Số điện thoại:</label>
+                <input type="text" id="sdt" name="sdt" value="@Model.SDT" required readonly />
+            </div>
+
+            <div class="form-group">
+                <button type="submit">Cập nhật thông tin</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="change-password">
+        <a href="@Url.Action("Doi_mk", "KhachHang")">Thay đổi mật khẩu</a>
+    </div>
+</main>
+
+<style>
+    header {
+        width: 100%; /* Chiếm toàn bộ chiều rộng màn hình */
+        padding: 15px 0; /* Giảm chiều cao header */
+        background-color: #f4f4f9;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .account-title {
+        font-size: 28px;
+        color: #333;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .personal-info-title {
+        font-size: 22px;
+        color: #555;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .form-container {
+        width: 100%;
+        max-width: 600px; /* Giới hạn chiều rộng của form */
+        margin: 0 auto;
+        padding: 25px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .form-group label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 120px;
+            text-align: right;
+            color: #333;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-width: 100%; /* Chiếm hết chiều rộng có sẵn */
+            width: calc(100% - 130px); /* Đảm bảo input chiếm toàn bộ không gian còn lại */
+        }
+
+    button {
+        display: block;
+        margin: 25px auto;
+        padding: 12px 30px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%; /* Chiếm hết chiều rộng */
+    }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+    .change-password {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+        .change-password a {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+            .change-password a:hover {
+                background-color: #0056b3;
+            }
+</style>

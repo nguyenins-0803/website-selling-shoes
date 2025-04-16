@@ -1,0 +1,198 @@
+﻿@model CUAHANGGIAY.Models.SANPHAM
+
+@{
+    ViewBag.Title = "Chi_tiet";
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+}
+
+<style>
+    .product-section {
+        display: flex;
+        flex-direction: row;
+        padding: 30px;
+        gap: 40px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .product-image img {
+        max-width: 400px;
+        border-radius: 10px;
+    }
+
+    .product-info h2 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .product-info .price {
+        color: red;
+        font-weight: bold;
+        font-size: 24px;
+    }
+
+    .product-info ul {
+        list-style: none;
+        padding: 0;
+    }
+
+        .product-info ul li {
+            margin-bottom: 5px;
+        }
+
+    .size-options, .quantity-section {
+        margin: 20px 0;
+    }
+
+        .size-options button {
+            border: 1px solid #ccc;
+            margin-right: 8px;
+            padding: 10px;
+            width: 50px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+            .size-options button:hover {
+                border-color: #000;
+            }
+
+            .size-options button.selected {
+                background-color: #000;
+                color: #fff;
+                border-color: #000;
+            }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+    }
+
+        .quantity-control button {
+            padding: 5px 10px;
+        }
+
+        .quantity-control input {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+        }
+
+    .action-buttons {
+        margin-top: 20px;
+    }
+
+        .action-buttons a {
+            padding: 10px 20px;
+            background-color: orange;
+            color: white;
+            text-decoration: none;
+            margin-right: 10px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+</style>
+
+<main class="container">
+    <div class="product-section">
+        <!-- Hình ảnh -->
+        <div class="product-image">
+            <img src="@Model.AnhMinhHoa" alt="@Model.TenSP" />
+        </div>
+
+        <!-- Thông tin sản phẩm và mô tả sản phẩm -->
+        <div class="product-info">
+            <h2>@Model.TenSP</h2>
+            <p class="price">@Model.GiaSP.ToString("N0")₫</p>
+            <p><strong>Mã sản phẩm:</strong> @Model.MaSP</p>
+            <p><strong>Trạng thái:</strong> Hàng có sẵn</p>
+
+            <!-- Thông tin bổ sung -->
+            <h3>Thông tin sản phẩm</h3>
+            <ul>
+                <li><strong>Màu sắc:</strong> @Model.MauSP</li>
+                <li><strong>Thương hiệu:</strong> @Model.ThuongHieu</li>
+                <li><strong>Chất liệu:</strong> @Model.ChatLieu</li>
+                <li><strong>Kiểu dáng:</strong> @Model.KieuDang</li>
+            </ul>
+
+            <h3>Mô tả sản phẩm</h3>
+            <p>@Model.Mota</p>
+
+            <!-- Chọn size -->
+            <div class="size-options">
+                <p><strong>Chọn size:</strong></p>
+                @foreach (var item in ViewBag.SizeList as List<CUAHANGGIAY.Models.CHITIETSIZE>)
+                {
+                    <button class="size-button" data-size="@item.MaSize">@item.MaSize</button>
+                }
+            </div>
+
+            <!-- Chọn số lượng -->
+            <div class="quantity-section">
+                <p><strong>Chọn số lượng:</strong></p>
+                <div class="quantity-control">
+                    <button onclick="changeQuantity(-1)">-</button>
+                    <input type="text" id="quantity" value="1" />
+                    <button onclick="changeQuantity(1)">+</button>
+                </div>
+            </div>
+
+            <!-- Nút thao tác -->
+            <div class="action-buttons">
+                <a href="javascript:void(0);" onclick="addToCart('@Model.MaSP')">THÊM VÀO GIỎ HÀNG</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<script>
+    let selectedSize = null;
+
+    document.querySelectorAll('.size-button').forEach(button => {
+        button.addEventListener('click', function () {
+            // Xóa class selected khỏi tất cả button
+            document.querySelectorAll('.size-button').forEach(btn => btn.classList.remove('selected'));
+            // Gán class selected cho button đang click
+            this.classList.add('selected');
+            selectedSize = this.getAttribute('data-size');
+        });
+    });
+
+    function changeQuantity(change) {
+        let input = document.getElementById("quantity");
+        let current = parseInt(input.value);
+        if (!isNaN(current)) {
+            current = Math.max(1, current + change);
+            input.value = current;
+        }
+    }
+
+    function addToCart(productId) {
+        let quantity = document.getElementById("quantity").value;
+        if (!selectedSize) {
+            alert("Vui lòng chọn size trước khi thêm vào giỏ hàng.");
+            return;
+        }
+
+        $.ajax({
+            url: '/GH_KH/AddToCart',
+            type: 'POST',
+            data: {
+                id: productId,
+                quantity: quantity,
+                size: selectedSize
+            },
+            success: function (response) {
+                alert(response.message);
+            },
+            error: function () {
+                alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
+            }
+        });
+    }
+</script>
