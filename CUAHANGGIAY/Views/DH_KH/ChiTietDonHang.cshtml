@@ -1,0 +1,121 @@
+﻿
+@{
+
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+}
+
+
+<h2>Chi Tiết Đơn Hàng</h2>
+<!-- Table for Order History -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Ngày mua hàng</th>
+            <th>Tên sản phẩm</th>
+            <th>Giá mua</th>
+            <th>Số lượng mua</th>
+            <th>Size</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="orderTable">
+        <!-- Data will load here -->
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.MaDH</td>
+                <td>@order.NgayMua</td>
+                <td>@order.TenSP</td>
+                <td>@order.GiaMua</td>
+                <td>@order.SLMua</td>
+                <td>@order.Size</td>
+                <td>@order.TongTien</td>
+                <td>@order.TrangThai</td>
+                <td>
+                    <a href="javascript:void(0);" class="btnDetails" data-id="@order.MaDH">Xem chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal for Order Detail -->
+<div id="orderDetailModal" style="display: none;">
+    <div id="orderDetailContent">
+        <h3>Chi tiết đơn hàng</h3>
+        <div id="orderDetailsContainer"></div>
+        <button onclick="$('#orderDetailModal').hide();">Đóng</button>
+    </div>
+</div>
+
+<!-- Script for AJAX -->
+<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        // Sự kiện khi bấm vào "Xem chi tiết"
+        $(document).on('click', '.btnDetails', function () {
+            var maDH = $(this).data('id'); // Lấy mã đơn hàng
+
+            $.ajax({
+                url: '/DH_KH/GetOrderDetail', // Địa chỉ Action trả về JSON
+                type: 'GET',
+                data: { maDH: maDH }, // Gửi mã đơn hàng
+                success: function (response) {
+                    if (response.success) {
+                        // Hiển thị chi tiết đơn hàng
+                        displayOrderDetails(response.orderDetails);
+                    } else {
+                        alert(response.message); // Hiển thị thông báo lỗi
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi lấy dữ liệu!");
+                }
+            });
+        });
+
+        // Hàm hiển thị chi tiết đơn hàng
+        function displayOrderDetails(orderDetails) {
+            var orderHTML = '';
+            var productsHTML = '';
+
+            // Hiển thị thông tin đơn hàng
+            orderHTML += '<h4>Thông Tin Khách Hàng</h4>';
+            orderHTML += '<p><strong>Tên khách hàng:</strong> ' + orderDetails.DonHang.TenKH + '</p>';
+            orderHTML += '<p><strong>Số điện thoại:</strong> ' + orderDetails.DonHang.SDT + '</p>';
+            orderHTML += '<p><strong>Địa chỉ:</strong> ' + orderDetails.DonHang.DiaChi + '</p>';
+            orderHTML += '<p><strong>Ngày mua:</strong> ' + new Date(orderDetails.DonHang.NgayMua).toLocaleDateString() + '</p>';
+            orderHTML += '<p><strong>Trạng thái đơn hàng:</strong> ' + orderDetails.DonHang.TrangThai + '</p>';
+
+            // Hiển thị bảng sản phẩm
+            productsHTML += '<h4>Danh Sách Sản Phẩm</h4>';
+            productsHTML += '<table class="table"><thead><tr><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th>Giá mua</th><th>Số lượng</th><th>Size</th><th>Ảnh sản phẩm</th></tr></thead><tbody>';
+
+            $.each(orderDetails.SanPham, function (index, product) {
+                productsHTML += '<tr>';
+                productsHTML += '<td>' + product.MaSP + '</td>';
+                productsHTML += '<td>' + product.TenSP + '</td>';
+                productsHTML += '<td>' + product.GiaMua.toLocaleString() + ' VND</td>';
+                productsHTML += '<td>' + product.SLMua + '</td>';
+                productsHTML += '<td>' + product.Size + '</td>'; // Thêm dòng này
+                productsHTML += '<td><img src="' + product.AnhMinhHoa + '" alt="' + product.TenSP + '" width="50" height="50" /></td>';
+                productsHTML += '</tr>';
+            });
+
+            productsHTML += '</tbody></table>';
+
+            // Hiển thị tổng tiền
+            orderHTML += '<h4>Tổng Tiền: ' + orderDetails.DonHang.TongTien.toLocaleString() + ' VND</h4>';
+
+            // Chèn thông tin vào modal
+            $('#orderDetailsContainer').html(orderHTML + productsHTML);
+
+            // Hiển thị modal
+            $('#orderDetailModal').show();
+        }
+
+    });
+</script>

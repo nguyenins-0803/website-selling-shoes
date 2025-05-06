@@ -1,0 +1,43 @@
+﻿@model dynamic
+
+<main>
+    <div class="order-confirmation">
+        <h2 class="confirmation-title">Cảm ơn bạn đã đặt hàng!</h2>
+        <p class="confirmation-message">Đơn hàng của bạn đã được xử lý thành công. Vui lòng kiểm tra thông tin dưới đây:</p>
+
+        <table class="order-details">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Ảnh</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Tổng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.OrderDetails)
+                {
+                    <tr>
+                        <td>@item.TenSP</td>
+                        <td><img src="@item.HinhAnh" alt="Product Image" class="product-image"></td>
+                        <td>@item.DonGia.ToString("N0") đ</td>
+                        <td>@item.SoLuong</td>
+                        <td>@(item.DonGia * item.SoLuong).ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Tổng tiền</td>
+                    <td>@ViewBag.TotalAmount.ToString("N0") đ</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="action-buttons">
+            <button class="btn-continue" onclick="window.location.href='/home'">Tiếp tục mua sắm</button>
+            <button class="btn-my-orders" onclick="window.location.href='/'">Xem đơn hàng của tôi</button>
+        </div>
+    </div>
+</main>

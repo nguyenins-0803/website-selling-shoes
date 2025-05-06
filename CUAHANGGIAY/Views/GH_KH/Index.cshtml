@@ -1,0 +1,158 @@
+﻿@{
+    Layout = "~/Views/Shared/Layout_KH.cshtml"; // Layout dành cho khách hàng
+    var userID = Session["MaKH"] as string;
+}
+
+<h2>Giỏ hàng</h2>
+
+<table id="cartTable" class="table">
+    <thead>
+        <tr>
+
+            <th>Hình ảnh</th>
+            <th>Sản phẩm</th>
+            <th>Size</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Tổng</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Các dòng sản phẩm sẽ được load qua AJAX -->
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5" class="text-right"><strong>Tổng tiền:</strong></td>
+            <td id="grandTotal">0 VND</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="d-flex justify-content-between mt-3">
+    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">Tiếp tục mua sắm</a>
+    <button id="checkoutBtn" class="btn btn-success">Thanh toán</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function () {
+    // Điều hướng tới trang ThanhToan
+    $('#checkoutBtn').click(function () {
+        window.location.href = '@Url.Action("ThanhToan", "GH_KH")';
+    });
+
+    // Tải giỏ hàng
+    function loadCart() {
+        const defaultImage = '@Url.Content("~/Images/default.jpg")';
+        $.ajax({
+            url: '@Url.Action("GetCartItems", "GH_KH")',
+            type: 'POST',
+            dataType: 'json',
+            success: function (res) {
+                const $tbody = $('#cartTable tbody').empty();
+                let grandTotal = 0;
+
+                if (res.success && res.data.length) {
+                    res.data.forEach(item => {
+                        const imgSrc = item.Image ? item.Image : defaultImage;
+                        const row = `
+                            <tr>
+                                <td>
+                                    <img src="${imgSrc}" width="50" height="50"
+                                         onerror="this.src='${defaultImage}'">
+                                </td>
+                                <td>${item.Name}</td>
+                                 <td>${item.Size}</td>
+                                <td>${item.Price.toLocaleString()} VND</td>
+                                <td>
+                                    <input type="number"
+                                           class="form-control quantity-input"
+                                           data-id="${item.ID}"
+                                           data-size="${item.Size}"
+                                           value="${item.Quantity}"
+                                           min="1" max="${item.RemainingStock}">
+                                </td>
+                                <td class="total-price">
+                                    ${(item.Price * item.Quantity).toLocaleString()} VND
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm delete-item"
+                                            data-id="${item.ID}"
+                                            data-size="${item.Size}">
+                                        Xóa
+                                    </button>
+                                </td>
+                            </tr>`;
+                        $tbody.append(row);
+                        grandTotal += item.Price * item.Quantity;
+                    });
+                } else {
+                    $tbody.append('<tr><td colspan="7" class="text-center">Giỏ hàng của bạn đang trống.</td></tr>');
+                }
+
+                $('#grandTotal').text(grandTotal.toLocaleString() + ' VND');
+                bindEvents();
+            },
+            error: function () {
+                alert('Lỗi khi tải giỏ hàng!');
+            }
+        });
+    }
+
+    // Gắn sự kiện cho input & button sau khi render
+    function bindEvents() {
+        // Thay đổi số lượng
+        $('.quantity-input').off('change').on('change', function () {
+            const id   = $(this).data('id');
+            const size = $(this).data('size');
+            const qty  = parseInt($(this).val(), 10);
+            if (qty < 1) {
+                alert('Số lượng phải ≥ 1');
+                return loadCart();
+            }
+            $.post('@Url.Action("UpdateCart", "GH_KH")',
+                   { id: id, size: size, quantity: qty },
+                   function (res) {
+                       if (res.success) {
+                           const $row = $(`.quantity-input[data-id="${id}"][data-size="${size}"]`)
+                                           .closest('tr');
+                           $row.find('.total-price')
+                               .text(res.totalPrice.toLocaleString() + ' VND');
+                           recalcGrandTotal();
+                       } else {
+                           alert(res.message);
+                           loadCart();
+                       }
+                   });
+        });
+
+        // Xóa sản phẩm
+        $('.delete-item').off('click').on('click', function () {
+            const id   = $(this).data('id');
+            const size = $(this).data('size');
+            if (!confirm('Bạn có chắc muốn xóa không?')) return;
+            $.post('@Url.Action("RemoveFromCart", "GH_KH")',
+                   { id: id, size: size },
+                   function (res) {
+                       alert(res.message);
+                       if (res.success) loadCart();
+                   });
+        });
+    }
+
+    // Tính lại tổng cuối
+    function recalcGrandTotal() {
+        let total = 0;
+        $('#cartTable tbody tr').each(function () {
+            const text = $(this).find('.total-price').text().replace(/[^0-9]/g, '');
+            total += parseInt(text || '0', 10);
+        });
+        $('#grandTotal').text(total.toLocaleString() + ' VND');
+    }
+
+    // Kick off
+    loadCart();
+});
+</script>

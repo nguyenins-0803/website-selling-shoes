@@ -1,0 +1,157 @@
+﻿@model CUAHANGGIAY.Models.KHACHHANG
+
+@{
+    ViewBag.Title = "Sửa Thông Tin Cá Nhân";
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+}
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.SuccessMessage
+    </div>
+}
+
+<header>
+    <h2 class="account-title">Thông Tin Tài Khoản</h2>
+    <div>
+        <h3 class="personal-info-title">Đổi mật khẩu</h3>
+    </div>
+</header>
+
+<main>
+    <div class="form-container">
+        <form method="post" action="@Url.Action("Doi_mk", "KhachHang")">
+            <div class="form-group">
+                <label for="passold">Mật khẩu cũ:</label>
+                <input type="password" id="passold" name="passold" placeholder="Mật khẩu cũ" required />
+            </div>
+            <div class="form-group">
+                <label for="newpass">Mật khẩu mới:</label>
+                <input type="password" id="newpass" name="newpass" placeholder="Mật khẩu mới" required />
+            </div>
+            <div class="form-group">
+                <label for="confpass">Xác nhận mật khẩu:</label>
+                <input type="password" id="confpass" name="confpass" placeholder="Xác nhận mật khẩu" required />
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn-dmk">Đổi mật khẩu</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<style>
+    /* Header */
+    header {
+        width: 100%;
+        padding: 15px 0;
+        background-color: #f4f4f9;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .account-title {
+        font-size: 28px;
+        color: #333;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .personal-info-title {
+        font-size: 22px;
+        color: #555;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+
+    /* Form Container */
+    .form-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 25px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        display: flex;
+        margin-bottom: 20px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .form-group label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 120px;
+            text-align: right;
+            color: #333;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-width: 400px;
+        }
+
+    button {
+        display: block;
+        margin: 25px auto;
+        padding: 12px 30px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+    .btn-dmk {
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+    const passwordInput = document.getElementById('newpass');
+    const confirmPasswordInput = document.getElementById('confpass');
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', (event) => {
+        const passOld = document.getElementById('passold').value.trim();
+        const newPass = document.getElementById('newpass').value.trim();
+        const confPass = document.getElementById('confpass').value.trim();
+
+        if (!passOld || !newPass || !confPass) {
+            alert('Vui lòng không để trống bất kỳ trường nào!');
+            event.preventDefault();
+            return;
+        }
+
+        if (newPass !== confPass) {
+            alert('Mật khẩu mới và xác nhận mật khẩu không khớp!');
+            event.preventDefault();
+            return;
+        }
+    });
+</script>

@@ -1,0 +1,155 @@
+﻿@{
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+    var userId = Session["MaKH"] as string;
+}
+
+@using CUAHANGGIAY.Models
+@using CUAHANGGIAY.Controllers
+
+
+@{
+    ViewData["Title"] = "Thanh Toán";
+}
+
+<h2>Thanh Toán</h2>
+<h4>Thông tin người nhận</h4>
+<form id="checkoutForm" class="container">
+    <div class="row">
+        <!-- Cột trái -->
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="fullName" class="fw-bold">Họ và tên:</label>
+                <input type="text" class="form-control" id="fullName" name="FullName"
+                       value="@ViewData["FullName"]"  required />
+            </div>
+            <div class="form-group">
+                <label for="email" class="fw-bold">Email:</label>
+                <input type="email" class="form-control" id="email" name="Email"
+                       value="@ViewData["Email"]" required />
+            </div>
+            <div class="form-group">
+                <label for="phone" class="fw-bold">Số điện thoại:</label>
+                <input type="text" class="form-control" id="phone" name="Phone"
+                       value="@ViewData["Phone"]"  required />
+            </div>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="address" class="fw-bold">Địa chỉ:</label>
+                <input type="text" class="form-control" id="address" name="Address"
+                       value="@ViewData["Address"]" required />
+            </div>
+            <div class="form-group">
+                <label for="paymentMethod" class="fw-bold">Hình thức thanh toán:</label>
+                <select class="form-control" id="paymentMethod" name="PaymentMethod" required>
+                    <option value="COD" selected>Thanh toán khi nhận hàng</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="totalAmount" class="fw-bold">Tổng tiền:</label>
+                <input type="text" class="form-control" id="totalAmount" name="TotalAmount"
+                       value="@ViewData["TotalAmount"]" readonly />
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <h4>Thông tin sản phẩm</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Size</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Tổng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewData["CartItems"] as List<CartItem>)
+                {
+                    <tr>
+                        
+                        <td>
+                            <img src="@Url.Content("~/" + item.Image)"
+                                 alt="@item.Name" width="50" height="50"
+                                 onerror="this.src='@Url.Content("~/Images/default.jpg")'" />
+                        </td>
+                        <td>@item.Name</td>
+                        <td>@item.Size</td>
+                        <td>@item.Price.ToString("N0") VND</td>
+                        <td>
+                            <input type="number" class="form-control quantity-input"
+                                   value="@item.Quantity"
+                                   min="1" max="@item.RemainingStock"
+                                   readonly />
+                        </td>
+                        <td>
+                            @( (item.Price * item.Quantity).ToString("N0") + " VND" )
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Đặt hàng</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function () {
+    // Tính lại tổng tiền dựa trên cột Giá (index 3) và ô quantity-input
+    function updateTotalAmount() {
+        let total = 0;
+        $('.quantity-input').each(function () {
+            // Giá nằm ở cột thứ 4 (zero-based index 3)
+            const priceText = $(this)
+                .closest('tr')
+                .find('td:eq(3)').text()
+                .replace(/[^0-9]/g, '');
+            const price = parseFloat(priceText) || 0;
+            const qty   = parseInt($(this).val(), 10) || 0;
+            total += price * qty;
+        });
+        $('#totalAmount').val(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND");
+    }
+
+    // Gửi form qua AJAX
+    $('#checkoutForm').submit(function (e) {
+        e.preventDefault();
+        const formData = {
+            FullName:      $('#fullName').val(),
+            Email:         $('#email').val(),
+            Phone:         $('#phone').val(),
+            Address:       $('#address').val(),
+            PaymentMethod: $('#paymentMethod').val()
+            // TotalAmount do controller tính lại, không cần gửi
+        };
+
+        $.ajax({
+            url: '@Url.Action("Checkout", "GH_KH")',
+            type: 'POST',
+            data: formData,
+            success: function (res) {
+                if (res.success) {
+                    alert(res.message);
+                    window.location.href = '@Url.Action("Index","DH_KH")';
+                } else {
+                    alert(res.message);
+                }
+            },
+            error: function () {
+                alert('Lỗi khi gửi thông tin, vui lòng thử lại.');
+            }
+        });
+    });
+
+    // Tính ngay khi load
+    updateTotalAmount();
+});
+</script>

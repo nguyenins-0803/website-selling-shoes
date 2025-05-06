@@ -1,0 +1,538 @@
+﻿@{
+    ViewBag.Title = "Lịch Sử Đơn Hàng";
+    Layout = "~/Views/Shared/Layout_KH.cshtml";
+}
+
+<style>
+    /* Sử dụng Flexbox cho các tab */
+    #orderStatsTabs {
+        display: flex;
+        justify-content: space-between; /* Phân bổ đều không gian giữa các tab */
+        flex-wrap: nowrap; /* Ngăn chặn việc xuống dòng */
+    }
+
+        /* Điều chỉnh cho các tab */
+        #orderStatsTabs .nav-item {
+            flex: 1; /* Các tab chiếm không gian đều */
+            text-align: center; /* Căn giữa nội dung tab */
+        }
+
+        /* Điều chỉnh cho các liên kết tab */
+        #orderStatsTabs .nav-link {
+            padding: 10px 15px; /* Điều chỉnh khoảng cách bên trong */
+            white-space: nowrap; /* Ngăn chặn việc xuống dòng */
+            display: block;
+        }
+
+        /* Thêm một chút khoảng cách giữa các tab nếu cần */
+        #orderStatsTabs .nav-item + .nav-item {
+            margin-left: 5px;
+        }
+</style>
+
+<h2>Lịch sử đơn đặt hàng</h2>
+<button id="btnShowStats" class="btn btn-info">Xem thống kê đơn hàng</button>
+<!-- Table for Order History -->
+<table border="1" class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Ngày mua hàng</th>
+            <th>Tên sản phẩm</th>
+            <th>Số lượng mua</th>
+            <th>Size</th>
+            <th>Giá mua</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="orderTable">
+        <!-- Data will load here -->
+    </tbody>
+</table>
+<style>
+    /* General page styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa; /* Light background for readability */
+}
+
+/* Title styling */
+h2 {
+    color: #007bff; /* Make the title stand out */
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+/* Button styling */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-info:hover {
+    background-color: #138496; /* Darker shade on hover */
+}
+
+/* Table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white; /* White background for the table */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+/* Table headers styling */
+.table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+/* Table row hover effect */
+.table tbody tr:hover {
+    background-color: #f1f1f1; /* Light grey on hover */
+}
+
+/* Styling for order detail modal */
+.modal-content {
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-body {
+    font-size: 16px;
+}
+
+/* Styling the order stats modal */
+#orderStatsTabs .nav-link {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-right: 10px;
+    font-weight: bold;
+    padding: 12px 20px;
+    transition: background-color 0.3s;
+}
+
+#orderStatsTabs .nav-link.active {
+    background-color: #007bff;
+    color: white;
+}
+
+#orderStatsTabs .nav-link:hover {
+    background-color: #e9ecef;
+}
+
+/* Tab content styling */
+.stat-item {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+/* Links in table actions */
+.table .btnDetails, .table .btnCancel, .table .btnReceived {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.table .btnDetails:hover, .table .btnCancel:hover, .table .btnReceived:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Modal button styles */
+.modal-footer .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border-radius: 5px;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+
+    .modal-dialog {
+        max-width: 80%;
+    }
+
+    .table th, .table td {
+        padding: 15px;
+    }
+}
+
+</style>
+
+<!-- Modal for Order Detail -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailModalLabel">Chi Tiết Đơn Hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>Thông tin khách hàng</h4>
+                <p><strong>Tên khách hàng:</strong> <span id="customerName"></span></p>
+                <p><strong>Số điện thoại:</strong> <span id="customerPhone"></span></p>
+                <p><strong>Địa chỉ:</strong> <span id="customerAddress"></span></p>
+                <p><strong>Ngày mua hàng:</strong> <span id="orderDate"></span></p>
+                <p><strong>Trạng thái đơn hàng:</strong> <span id="orderStatus"></span></p>
+                <p><strong>Tổng tiền:</strong> <span id="orderTotal"></span></p>
+
+                <h4>Danh Sách Sản Phẩm</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Mã sản phẩm</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Size</th>
+                            <th>Giá mua</th>
+                            <th>Số lượng</th>
+                            <th>Ảnh sản phẩm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderProducts">
+                        <!-- Product list will load here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thống Kê Đơn Hàng -->
+<div class="modal fade" id="orderStatsModal" tabindex="-1" aria-labelledby="orderStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderStatsModalLabel">Thống Kê Đơn Hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="orderStatsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="completed-orders-tab" data-bs-toggle="tab" href="#completed-orders" role="tab" aria-controls="completed-orders" aria-selected="true">Đơn hàng thành công</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="shipping-orders-tab" data-bs-toggle="tab" href="#shipping-orders" role="tab" aria-controls="shipping-orders" aria-selected="false">Đơn hàng đang giao</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="cancelled-orders-tab" data-bs-toggle="tab" href="#cancelled-orders" role="tab" aria-controls="cancelled-orders" aria-selected="false">Đơn hàng đã hủy</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="all-orders-tab" data-bs-toggle="tab" href="#all-orders" role="tab" aria-controls="all-orders" aria-selected="false">Tất cả đơn hàng</a>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="orderStatsTabsContent">
+                    <div class="tab-pane fade show active" id="completed-orders" role="tabpanel" aria-labelledby="completed-orders-tab">
+                        <div class="stat-item">
+                            <strong>Số đơn hàng thành công:</strong> <span id="totalCompletedOrders">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Tổng giá trị đơn hàng thành công:</strong> <span id="totalValueCompleted">0</span> VND
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="shipping-orders" role="tabpanel" aria-labelledby="shipping-orders-tab">
+                        <div class="stat-item">
+                            <strong>Số đơn hàng đang giao:</strong> <span id="totalShippingOrders">0</span>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="cancelled-orders" role="tabpanel" aria-labelledby="cancelled-orders-tab">
+                        <div class="stat-item">
+                            <strong>Số đơn hàng đã hủy:</strong> <span id="totalCancelledOrders">0</span>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="all-orders" role="tabpanel" aria-labelledby="all-orders-tab">
+                        <div class="stat-item">
+                            <strong>Tổng số đơn hàng (Tất cả trạng thái):</strong> <span id="totalAllOrders">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Script for AJAX -->
+<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        loadOrders();
+
+        // Load Orders via AJAX
+        function loadOrders() {
+            $.ajax({
+                url: '/DH_KH/GetDonHangs',
+                type: 'GET',
+                success: function (data) {
+                    if (data.success === false) {
+                        alert(data.message); // Hiển thị thông báo nếu không có dữ liệu
+                        return;
+                    }
+                    groupAndRenderTable(data);
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi tải dữ liệu!");
+                }
+            });
+        }
+
+        // Hàm nhóm dữ liệu theo Mã Đơn Hàng
+        function groupAndRenderTable(data) {
+            var groupedData = {};
+
+            // Nhóm dữ liệu theo MaDH
+            $.each(data, function (i, order) {
+                if (!groupedData[order.MaDH]) {
+                    groupedData[order.MaDH] = {
+                        MaDH: order.MaDH,
+                        NgayMua: formatDate(order.NgayMua),
+                        TrangThai: order.TrangThai,
+                        SanPham: [],
+                        TongTien: 0
+                    };
+                }
+                groupedData[order.MaDH].SanPham.push({
+                    TenSP: order.TenSP,
+                    TenSize: order.TenSize,
+                    GiaMua: order.GiaMua,
+                    SLMua: order.SLMua
+                });
+                // Tính tổng tiền cho đơn hàng
+                groupedData[order.MaDH].TongTien += order.GiaMua * order.SLMua;
+            });
+
+            // Render table
+            var rows = "";
+            $.each(groupedData, function (maDH, order) {
+                var rowspan = order.SanPham.length;
+
+                // Render hàng đầu tiên của đơn hàng (Mã Đơn Hàng, Ngày Mua, Trạng Thái, Tổng Tiền)
+                rows += "<tr>";
+                rows += "<td rowspan='" + rowspan + "'><span>" + order.MaDH + "</span></td>";
+                rows += "<td rowspan='" + rowspan + "'><span>" + order.NgayMua + "</span></td>";
+
+                // Render sản phẩm đầu tiên
+                rows += "<td>" + order.SanPham[0].TenSP + "</td>";
+                rows += "<td>" + order.SanPham[0].SLMua + "</td>";
+                rows += "<td>" + order.SanPham[0].TenSize + "</td>";
+                rows += "<td>" + order.SanPham[0].GiaMua.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) + "</td>";
+
+                // Render cột Trạng Thái và Tổng Tiền cho hàng đầu tiên
+                rows += "<td rowspan='" + rowspan + "'><span>" + order.TrangThai + "</span></td>";
+                rows += "<td rowspan='" + rowspan + "'><span>" + order.TongTien.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) + "</span></td>";
+
+                // Render Action (Xem chi tiết và Hủy đơn hàng nếu trạng thái là "Đang xử lý")
+                rows += "<td rowspan='" + rowspan + "'><span>" +
+                    "<a href='#' class='btnDetails' data-id='" + order.MaDH + "'>Xem chi tiết</a> | " +
+                    (order.TrangThai === "Đang xử lý" ? "<a href='#' class='btnCancel' data-id='" + order.MaDH + "'>Hủy đơn hàng</a>" : "") +
+                    (order.TrangThai === "Đang giao" ? "<a href='#' class='btnReceived' data-id='" + order.MaDH + "'>Đã nhận được hàng</a>" : "") +
+                    "</span></td>";
+                rows += "</tr>";
+
+                // Render các sản phẩm còn lại trong đơn hàng
+                for (var i = 1; i < order.SanPham.length; i++) {
+                    rows += "<tr>";
+                    rows += "<td>" + order.SanPham[i].TenSP + "</td>";
+                    rows += "<td>" + order.SanPham[i].SLMua + "</td>";
+                    rows += "<td>" + order.SanPham[i].TenSize + "</td>";
+                    rows += "<td>" + order.SanPham[i].GiaMua.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) + "</td>";
+                    rows += "<td></td>"; // Cột Tổng Tiền đã được render ở hàng đầu tiên
+                    rows += "</tr>";
+                }
+            });
+
+            // Cập nhật bảng với các hàng đã được render
+            $("#orderTable").html(rows);
+        }
+
+        // Định dạng ngày
+        function formatDate(dateString) {
+            var regex = /\/Date\((\d+)\)\//;
+            var match = regex.exec(dateString);
+            if (match && match[1]) {
+                var timestamp = parseInt(match[1]);
+                var date = new Date(timestamp);
+                var day = ("0" + date.getDate()).slice(-2);
+                var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                var year = date.getFullYear();
+                var hours = ("0" + date.getHours()).slice(-2);
+                var minutes = ("0" + date.getMinutes()).slice(-2);
+                var seconds = ("0" + date.getSeconds()).slice(-2);
+
+                return day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+            }
+            return dateString;
+        }
+        // Xử lý sự kiện khi nhấn nút "Đã nhận được hàng"
+        $(document).on('click', '.btnReceived', function () {
+            var maDH = $(this).data('id'); // Lấy mã đơn hàng từ thuộc tính data-id
+            var confirmation = confirm("Bạn có chắc chắn đã nhận được đơn hàng này?");
+            if (confirmation) {
+                $.ajax({
+                    url: '/DH_KH/MarkAsCompleted', // API để cập nhật trạng thái thành "Thành công"
+                    type: 'POST',
+                    data: { maDH: maDH },
+                    success: function (data) {
+                        if (data.success) {
+                            alert("Đơn hàng đã được cập nhật thành công!");
+                            loadOrders(); // Tải lại danh sách đơn hàng sau khi cập nhật trạng thái
+                        } else {
+                            alert(data.message); // Thông báo nếu có lỗi
+                        }
+                    },
+                    error: function () {
+                        alert("Có lỗi xảy ra khi cập nhật trạng thái!");
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.btnCancel', function () {
+            var maDH = $(this).data('id');
+            var confirmation = confirm("Bạn có chắc chắn muốn hủy đơn hàng này?");
+            if (confirmation) {
+                $.ajax({
+                    url: '/DH_KH/HuyDon',
+                    type: 'GET',
+                    data: { maDH: maDH },
+                    success: function (data) {
+                        if (data.success) {
+                            alert(data.message); // Hiển thị thông báo thành công
+                            loadOrders(); // Tải lại danh sách đơn hàng sau khi hủy
+                        } else {
+                            alert(data.message); // Hiển thị thông báo lỗi
+                        }
+                    },
+                    error: function () {
+                        alert("Có lỗi xảy ra khi hủy đơn hàng!");
+                    }
+                });
+            }
+        });
+        // Hàm mở modal thống kê đơn hàng
+        function openOrderStatsModal() {
+            $('#orderStatsModal').modal('show');  // Mở modal thống kê đơn hàng
+        }
+        // Hàm đóng modal thống kê đơn hàng
+        function closeOrderStatsModal() {
+            $('#orderStatsModal').modal('hide');  // Đóng modal thống kê đơn hàng
+        }
+        // Sau khi hoàn thành xử lý dữ liệu thống kê và muốn đóng modal
+        $('#orderStatsModal').modal('hide');  // Đóng modal thống kê đơn hàng
+
+
+        // Hiển thị thống kê khi mở modal
+        function showOrderStats() {
+            $.ajax({
+                url: '/DH_KH/GetOrderStats',
+                type: 'GET',
+                success: function (data) {
+                    if (data.success) {
+                        // Cập nhật thông tin thống kê vào modal
+                        $("#totalCompletedOrders").text(data.totalCompletedOrders);
+                        $("#totalValueCompleted").text(data.totalValueCompleted);
+                        $("#totalShippingOrders").text(data.totalShippingOrders);
+                        $("#totalCancelledOrders").text(data.totalCancelledOrders);
+                        $("#totalAllOrders").text(data.totalAllOrders);
+
+                        // Mở modal
+                        $('#orderStatsModal').modal('show');
+                    } else {
+                        alert(data.message); // Thông báo lỗi nếu không có đơn hàng
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi tải dữ liệu!");
+                }
+            });
+        }
+
+        // Gọi hàm showOrderStats khi nhấn vào nút
+        $("#btnShowStats").on("click", function () {
+            showOrderStats();  // Mở modal
+        });
+
+
+
+        // View Details Event
+        $(document).on('click', '.btnDetails', function () {
+            var maDH = $(this).data('id'); // Lấy mã đơn hàng từ thuộc tính data-id
+            $.ajax({
+                url: '/DH_KH/GetChiTietDonHang',
+                type: 'GET',
+                data: { maDH: maDH }, // Truyền mã đơn hàng vào data
+                success: function (data) {
+                    if (data.success) {
+                        // Cập nhật nội dung cho modal
+                        $("#customerName").text(data.orderDetails.DonHang.TenKH);
+                        $("#customerPhone").text(data.orderDetails.DonHang.SDT);
+                        $("#customerAddress").text(data.orderDetails.DonHang.DiaChi);
+                        $("#orderDate").text(formatDate(data.orderDetails.DonHang.NgayMua)); // Định dạng ngày
+                        $("#orderStatus").text(data.orderDetails.DonHang.TrangThai);
+                        $("#orderTotal").text(data.orderDetails.DonHang.TongTien.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }));
+
+                        var productsHtml = "";
+                        $.each(data.orderDetails.SanPham, function (i, product) {
+                            productsHtml += "<tr>";
+                            productsHtml += "<td>" + product.MaSP + "</td>";
+                            productsHtml += "<td>" + product.TenSP + "</td>";
+                            productsHtml += "<td>" + product.TenSize + "</td>";
+                            productsHtml += "<td>" + product.GiaMua.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) + "</td>";
+                            productsHtml += "<td>" + product.SLMua + "</td>";
+                            productsHtml += "<td><img src='" + product.AnhMinhHoa + "' alt='" + product.TenSP + "' width='50' /></td>"; // Sửa ảnh sản phẩm
+                            productsHtml += "</tr>";
+                        });
+                        $("#orderProducts").html(productsHtml);
+
+                        // Hiển thị modal
+                        $('#orderDetailModal').modal('show');
+                    } else {
+                        alert(data.message); // Thông báo nếu không thành công
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi tải chi tiết đơn hàng!"); // Thông báo lỗi khi không thể tải chi tiết
+                }
+            });
+        });
+
+
+
+
+    });
+</script>

@@ -1,0 +1,83 @@
+﻿@{
+    ViewBag.Title = "Đặt lại mật khẩu";
+    Layout = null; // Assuming you have a layout file
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Đổi mật khẩu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS tùy chỉnh */
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: left;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .form-control:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+            }
+
+        .btn-green {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+            .btn-green:hover {
+                background-color: #218838;
+            }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="@Url.Action("Index", "Home")" class="text-link">SHOP ALY</a>
+    </div>
+    <div class="container mt-5 d-flex justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">Đổi mật khẩu</h2>
+            <div class="card p-4 shadow-sm">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+                }
+                @if (ViewBag.SuccessMessage != null)
+                {
+                    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+                }
+                <form method="post" action="@Url.Action("Dat_lai_mk", "TK_KH")">
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Nhập mật khẩu mới">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Xác nhận mật khẩu mới">
+                    </div>
+                    <button type="submit" class="btn btn-green w-100">Đổi mật khẩu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

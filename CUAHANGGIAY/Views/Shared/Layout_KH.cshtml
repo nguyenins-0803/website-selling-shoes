@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - SHOP SHOES ALY</title>
+
+    <!-- Bootstrap CSS (phiên bản 5.2.3) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        .navbar-nav {
+            display: flex;
+            align-items: center; /* Căn giữa các phần tử */
+        }
+
+        .nav-item {
+            margin-left: 15px; /* Khoảng cách giữa các mục */
+        }
+
+        .shopping-cart {
+            font-size: 24px; /* Kích thước biểu tượng giỏ hàng */
+            cursor: pointer;
+            margin-left: 10px;
+            color: white
+        }
+
+        .nav-link {
+            font-size: 18px; /* Kích thước font của tên người dùng */
+        }
+
+        #userMenu {
+            color: white !important; /* Ensure the text is white */
+        }
+
+            #userMenu:hover {
+                color: #f8f9fa !important; /* Optional: Lighter white on hover */
+            }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container">
+            <!-- Brand -->
+            @Html.ActionLink("SHOP ALY", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+
+            <!-- Toggle button -->
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Content -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    @if (Session["TenKH"] != null)
+                    {
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                @Session["TenKH"]
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("Thong_tin_KH", "KhachHang")">Tài khoản của tôi</a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "DH_KH")">Đơn mua</a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("DangXuat", "Home")">Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                        <!-- Shopping Cart Icon -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "GH_KH")">
+                                <i class="bi bi-cart3 shopping-cart"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <!-- Register & Login Buttons -->
+                        <li class="nav-item">
+                            <a class="btn btn-primary me-2" href="@Url.Action("DangKy", "TK_KH")">Đăng ký</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-secondary" href="@Url.Action("Login", "TK_KH")">Đăng nhập</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        @RenderBody()
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-4">
+        <hr />
+        <p>&copy; @DateTime.Now.Year - SHOP ALY</p>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap Bundle (JS + Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Section for Additional Scripts -->
+    @RenderSection("scripts", required: false)
+</body>
+</html>

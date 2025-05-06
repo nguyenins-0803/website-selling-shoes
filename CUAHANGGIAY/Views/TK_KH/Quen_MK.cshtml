@@ -1,0 +1,157 @@
+﻿@{
+    ViewBag.Title = "Quên mật khẩu";
+    Layout = null; // Assuming you have a layout file
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Quên mật khẩu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS tùy chỉnh */
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: left;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .form-control:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+            }
+
+        .btn-green {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+            .btn-green:hover {
+                background-color: #218838;
+            }
+
+        .text-link {
+            color: #007bff;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+            .text-link:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="@Url.Action("Index", "Home")" class="text-link">SHOP ALY</a>
+    </div>
+    <div class="container mt-5 d-flex justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">Quên mật khẩu</h2>
+            <div class="card p-4 shadow-sm">
+                <div id="otpMessage" class="mb-3"></div>
+                <form id="otpForm">
+                    <div class="mb-3">
+                        <label for="sdt" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" id="sdt" name="sdt" placeholder="Nhập số điện thoại của bạn">
+                        <small class="text-muted">
+                            <a href="#" class="text-link" id="sendOTP">Gửi mã OTP</a>
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="maOTP" class="form-label">Mã xác nhận (OTP)</label>
+                        <input type="text" class="form-control" id="maOTP" name="maOTP" placeholder="Nhập mã OTP">
+                    </div>
+                    <button type="submit" class="btn btn-green w-100">Xác nhận</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Gửi OTP
+            $("#sendOTP").click(function (event) {
+                event.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+                var sdt = $("#sdt").val();
+
+                if (!sdt) {
+                    $("#otpMessage").html('<div class="alert alert-danger">Vui lòng nhập số điện thoại!</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/TK_KH/SendOTP', // URL tới action trong Controller
+                    type: 'POST',
+                    data: { sdt: sdt },
+                    success: function (response) {
+                        if (response.success) {
+                            $("#otpMessage").html('<div class="alert alert-success">' + response.message + '</div>');
+                        } else {
+                            $("#otpMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function () {
+                        $("#otpMessage").html('<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại!</div>');
+                    }
+                });
+            });
+
+            // Xác nhận OTP
+            $("#otpForm").submit(function (event) {
+                event.preventDefault(); // Ngăn chặn hành động mặc định của form
+                var sdt = $("#sdt").val();
+                var otp = $("#maOTP").val();
+
+                if (!otp) {
+                    $("#otpMessage").html('<div class="alert alert-danger">Vui lòng nhập mã OTP!</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/TK_KH/VerifyOTP', // URL tới action trong Controller
+                    type: 'POST',
+                    data: { sdt: sdt, maOTP: otp },
+                    success: function (response) {
+                        console.log("Redirecting to: " + response.redirectUrl); // Kiểm tra phản hồi từ server
+                        if (response.success) {
+                            alert("Mã OTP đúng, đang chuyển hướng đến Dat_lai_mk");
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            alert("Mã OTP sai, thông báo: " + response.message);
+                            $("#otpMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function () {
+                        $("#otpMessage").html('<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại!</div>');
+                    }
+                });
+            });
+        });
+
+
+    </script>
+</body>
+</html>
