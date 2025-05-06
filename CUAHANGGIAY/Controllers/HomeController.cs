@@ -1,6 +1,7 @@
 ﻿using CUAHANGGIAY.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -17,8 +18,7 @@ namespace CUAHANGGIAY.Controllers
             string defaultDbName = "QLSHOPGIAY";
 
             // Xây dựng connection string
-            string connectionString = $"Data Source={serverName}\\SQLEXPRESS;Initial Catalog={defaultDbName};Integrated Security=True;TrustServerCertificate=True";
-
+            string connectionString = $"Data Source={serverName}\\MSSQLSERVER01;Initial Catalog={defaultDbName};Integrated Security=True;TrustServerCertificate=True";
             // Khởi tạo DataContext với connection string
             db = new DataDataContext(connectionString);
         }
