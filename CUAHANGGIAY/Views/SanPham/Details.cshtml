@@ -180,12 +180,12 @@
         }
 
         $.ajax({
-            url: '/GH_KH/AddToCart',
+            url: '/SanPham/AddToCart',
             type: 'POST',
             data: {
-                id: productId,
-                quantity: quantity,
-                size: selectedSize
+                maSP: productId,
+                maSize: selectedSize,
+                SoLuong: quantity
             },
             success: function (response) {
                 alert(response.message);

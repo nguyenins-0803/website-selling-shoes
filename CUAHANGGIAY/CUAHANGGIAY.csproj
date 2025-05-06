@@ -121,7 +121,10 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\CartItem1.cs" />
     <Compile Include="Controllers\DanhMucController.cs" />
+    <Compile Include="Controllers\DH_KHController.cs" />
+    <Compile Include="Controllers\GH_KHController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KhachHangController.cs" />
     <Compile Include="Controllers\SanPhamController.cs" />
@@ -158,6 +161,14 @@
     <Content Include="Content\toastr.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Images\default.jpg" />
+    <Content Include="Images\giay1.jpg" />
+    <Content Include="Images\giay2.jpg" />
+    <Content Include="Images\giay3.jpg" />
+    <Content Include="Images\giay4.jpg" />
+    <Content Include="Images\giay5..jpg" />
+    <Content Include="Images\giay6.jpg" />
+    <Content Include="Images\giay7.jpg" />
     <Content Include="Lib\dist\css\adminlte.css" />
     <Content Include="Lib\dist\css\adminlte.min.css" />
     <Content Include="Lib\dist\css\alt\adminlte.components.css" />
@@ -2081,11 +2092,6 @@
     <Content Include="Lib\plugins\uplot\uPlot.iife.js" />
     <Content Include="Lib\plugins\uplot\uPlot.iife.min.js" />
     <Content Include="Lib\plugins\uplot\uPlot.min.css" />
-    <Content Include="Models\Data.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>Data.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Lib\dist\css\adminlte.css.map" />
     <Content Include="Lib\dist\css\adminlte.min.css.map" />
     <Content Include="Lib\dist\css\alt\adminlte.components.css.map" />
@@ -2236,15 +2242,21 @@
     <Content Include="Content\bootstrap.rtl.min.css.map" />
     <Content Include="Content\toastr.less" />
     <Content Include="Content\toastr.scss" />
-    <None Include="Models\Data.dbml.layout">
-      <DependentUpon>Data.dbml</DependentUpon>
-    </None>
+    <Content Include="Images\Controller.docx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Models\Data.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>Data.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="Models\Data.dbml.layout">
+      <DependentUpon>Data.dbml</DependentUpon>
+    </None>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -2288,6 +2300,12 @@
     <Content Include="Views\KhachHang\Thong_tin_KH.cshtml" />
     <Content Include="Views\KhachHang\Doi_mk.cshtml" />
     <Content Include="Views\SanPham\Details.cshtml" />
+    <Content Include="Views\GH_KH\Index.cshtml" />
+    <Content Include="Views\GH_KH\ThanhToan.cshtml" />
+    <Content Include="Views\DH_KH\ChiTietDonHang.cshtml" />
+    <Content Include="Views\DH_KH\Index.cshtml" />
+    <Content Include="Views\DH_KH\ThongKeDonHang.cshtml" />
+    <Content Include="Views\DH_KH\XacnhanDHThanhCong.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -13,40 +13,58 @@ namespace CUAHANGGIAY.Controllers
 
         public HomeController()
         {
-            // Lấy tên máy chủ hiện tại
             string serverName = Environment.MachineName;
             string defaultDbName = "QLSHOPGIAY";
 
             // Xây dựng connection string
-            string connectionString = $"Data Source=YENNGTH-0803\\MSSQLSERVER01;Initial Catalog=QLSHOPGIAY;Integrated Security=True";
+            string connectionString = $"Data Source={serverName}\\SQLEXPRESS;Initial Catalog={defaultDbName};Integrated Security=True;TrustServerCertificate=True";
 
             // Khởi tạo DataContext với connection string
             db = new DataDataContext(connectionString);
         }
-        public ActionResult Index(string searchTerm, string childCategory)
+        private void LoadFilterData()
+        {
+            ViewBag.SizeList = db.SIZEs.Select(s => s.TenSize).Distinct().OrderBy(s => s).ToList();
+
+            if (ViewBag.SizeList == null)
+            {
+                ViewBag.SizeList = new List<string>(); // Tránh null reference exception
+            }
+
+            // Tiếp tục với các filter khác
+            ViewBag.MauSPList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                           .Select(s => s.MauSP)
+                                           .Distinct()
+                                           .ToList();
+            ViewBag.KieuDangList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                              .Select(s => s.KieuDang)
+                                              .Distinct()
+                                              .ToList();
+            ViewBag.ChatLieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                              .Select(s => s.ChatLieu)
+                                              .Distinct()
+                                              .ToList();
+            ViewBag.ThuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                                .Select(s => s.ThuongHieu)
+                                                .Distinct()
+                                                .ToList();
+
+        }
+
+
+
+        public ActionResult Index(string searchTerm)
         {
             var products = db.SANPHAMs
-                             .Where(p => p.IsDeleted == false) // Không còn kiểm tra SoLuong ở đây nữa
+                             .Where(p => p.IsDeleted == false)
                              .AsQueryable();
 
-            // Lọc sản phẩm theo tên tìm kiếm
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 products = products.Where(p => p.TenSP.Contains(searchTerm));
             }
 
-            // Lọc sản phẩm theo danh mục con
-            if (!string.IsNullOrEmpty(childCategory))
-            {
-                var categoryId = db.DANHMUCs
-                                   .Where(dm => dm.TenDM == childCategory)
-                                   .Select(dm => dm.MaDM)
-                                   .FirstOrDefault();
 
-                products = products.Where(p => p.MaDM == categoryId);
-            }
-
-            // Chỉ lấy những sản phẩm có ít nhất 1 size còn hàng trong bảng CHITIETSIZE
             var availableProductIds = db.CHITIETSIZEs
                                         .Where(c => c.SoLuong > 0)
                                         .Select(c => c.MaSP)
@@ -55,34 +73,45 @@ namespace CUAHANGGIAY.Controllers
 
             products = products.Where(p => availableProductIds.Contains(p.MaSP));
 
-            // Truyền danh mục cha và con về view
-            ViewBag.ParentCategories = db.DANHMUCs
-                .Where(dm => dm.DanhMucCha == null)
-                .Select(dm => dm.TenDM)
-                .ToList();
+            //ViewBag.SizeList = db.SIZEs.Select(s => s.TenSize).Distinct().OrderBy(s => s).ToList();
+            //var mauSPList = db.SANPHAMs.Select(p => p.MauSP).Distinct().ToList();
+            //ViewBag.MauSPList = mauSPList.Any() ? mauSPList : new List<string>();
 
-            ViewBag.ChildCategories = db.DANHMUCs
-                .Where(dm => dm.DanhMucCha != null)
-                .ToList();
+            //// >>> Thêm 3 ViewBag bị thiếu vào đây:
+            //ViewBag.ThuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+            //                        .Select(s => s.ThuongHieu)
+            //                        .Distinct()
+            //                        .ToList();
 
-            ViewBag.SelectedParentCategory = db.DANHMUCs
-                .Where(dm => dm.MaDM == childCategory)
-                .Select(dm => dm.DanhMucCha)
-                .FirstOrDefault();
+            //ViewBag.KieuDangList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+            //                        .Select(s => s.KieuDang)
+            //                        .Distinct()
+            //                        .ToList();
 
-            ViewBag.SelectedChildCategory = childCategory;
+            //ViewBag.ChatLieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+            //                        .Select(s => s.ChatLieu)
+            //                        .Distinct()
+            //                        .ToList();
 
+            LoadSidebarData();
             return View(products.ToList());
         }
-        public JsonResult GetDanhMucCon(string danhMucCha)
-        {
-            var danhMucCon = db.DANHMUCs
-                .Where(dm => dm.DanhMucCha == danhMucCha && dm.IsDeleted == false) // Thêm điều kiện IsDeleted = false
-                .Select(dm => new { dm.MaDM, dm.TenDM })
-                .ToList();
 
-            return Json(new { data = danhMucCon }, JsonRequestBehavior.AllowGet);
-        }
+        //public JsonResult GetDanhMucCon(string danhMucCha)
+        //{
+        //    if (string.IsNullOrEmpty(danhMucCha))
+        //    {
+        //        return Json(new { data = new List<string>() }, JsonRequestBehavior.AllowGet);
+        //    }
+
+        //    var danhMucCon = db.DANHMUCs
+        //        .Where(dm => dm.DanhMucCha == danhMucCha && dm.IsDeleted == false)
+        //        .Select(dm => new { dm.MaDM, dm.TenDM })
+        //        .ToList();
+
+        //    return Json(new { data = danhMucCon }, JsonRequestBehavior.AllowGet);
+        //}
+
         public JsonResult GetProductsByCategory(string categoryId)
         {
             // Lấy các sản phẩm có ít nhất 1 size còn hàng
@@ -106,59 +135,275 @@ namespace CUAHANGGIAY.Controllers
 
             return Json(new { data = products }, JsonRequestBehavior.AllowGet);
         }
-        // Action để thêm sản phẩm vào giỏ hàng
 
-        [HttpPost]
-        //public JsonResult AddToCart(string id) // Sửa MaSP thành id (cần điều chỉnh kiểu dữ liệu)
-        //{
-        //    var product = db.SANPHAMs.SingleOrDefault(p => p.MaSP == id); // Sử dụng SingleOrDefault để tìm sản phẩm
-        //    if (product != null)
-        //    {
-        //        // Logic để thêm sản phẩm vào giỏ hàng (cần thêm logic cụ thể nếu cần)
-        //        return Json(new { success = true, message = "Sản phẩm đã được thêm vào giỏ hàng." });
-        //    }
-        //    return Json(new { success = false, message = "Có lỗi xảy ra. Vui lòng thử lại." });
-        //}
-        // Action để tìm kiếm sản phẩm
-        [HttpGet]
-        public ActionResult SearchProducts(string searchTerm, string childCategory)
+        public ActionResult Filter(string sizeFilter, string mauSP, string kieuDang, string chatLieu, string thuongHieu, string sortBy)
         {
-            // Lấy danh sách sản phẩm còn hàng từ bảng CHITIETSIZE
-            var availableProductIds = db.CHITIETSIZEs
-                .Where(ct => ct.SoLuong > 0)
-                .Select(ct => ct.MaSP)
-                .Distinct()
-                .ToList();
 
-            var products = db.SANPHAMs
-                .Where(p => p.IsDeleted == false && availableProductIds.Contains(p.MaSP))
-                .AsQueryable();
+            LoadFilterData();
+            // Load danh sách sản phẩm trước
+            var products = db.SANPHAMs.Where(s => s.IsDeleted == false);
+
+            // Apply filter nếu có
+            if (!string.IsNullOrEmpty(sizeFilter))
+            {
+                var maSPList = db.CHITIETSIZEs.Where(ct => ct.MaSize.ToString() == sizeFilter)
+                                              .Select(ct => ct.MaSP)
+                                              .Distinct()
+                                              .ToList();
+                products = products.Where(p => maSPList.Contains(p.MaSP));
+            }
+
+            if (!string.IsNullOrEmpty(mauSP))
+            {
+                products = products.Where(p => p.MauSP == mauSP);
+            }
+
+            if (!string.IsNullOrEmpty(kieuDang))
+            {
+                products = products.Where(p => p.KieuDang == kieuDang);
+            }
+
+            if (!string.IsNullOrEmpty(chatLieu))
+            {
+                products = products.Where(p => p.ChatLieu == chatLieu);
+            }
+
+            if (!string.IsNullOrEmpty(thuongHieu))
+            {
+                products = products.Where(p => p.ThuongHieu == thuongHieu);
+            }
+
+            // Sort
+            switch (sortBy)
+            {
+                case "PriceAsc":
+                    products = products.OrderBy(p => p.GiaSP);
+                    break;
+                case "PriceDesc":
+                    products = products.OrderByDescending(p => p.GiaSP);
+                    break;
+                case "NameAsc":
+                    products = products.OrderBy(p => p.TenSP);
+                    break;
+                case "NameDesc":
+                    products = products.OrderByDescending(p => p.TenSP);
+                    break;
+            }
+         
+
+            var productList = products.ToList();
+
+            // Load filter option list vào ViewBag (giống như LoadFilterData)
+            ViewBag.SizeList = db.SIZEs.Select(s => s.TenSize).Distinct().OrderBy(s => s).ToList();
+            ViewBag.MauSPList = db.SANPHAMs.Where(s => s.IsDeleted == false).Select(s => s.MauSP).Distinct().ToList();
+            ViewBag.KieuDangList = db.SANPHAMs.Where(s => s.IsDeleted == false).Select(s => s.KieuDang).Distinct().ToList();
+            ViewBag.ChatLieuList = db.SANPHAMs.Where(s => s.IsDeleted == false).Select(s => s.ChatLieu).Distinct().ToList();
+            ViewBag.ThuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false).Select(s => s.ThuongHieu).Distinct().ToList();
+
+            // Truyền lại các giá trị filter để set selected option
+            ViewBag.SelectedSize = sizeFilter;
+            ViewBag.SelectedColor = mauSP;
+            ViewBag.SelectedStyle = kieuDang;
+            ViewBag.SelectedMaterial = chatLieu;
+            ViewBag.SelectedBrand = thuongHieu;
+            ViewBag.SelectedSort = sortBy;
+
+            return View("Index", productList);
+        }
+
+        public ActionResult SearchProducts(string searchTerm)
+        {
+            LoadFilterData();
+            var products = db.SANPHAMs.Where(s => s.IsDeleted == false);
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                products = products.Where(p => p.TenSP.Contains(searchTerm));
+                products = products.Where(p =>
+                    p.TenSP.Contains(searchTerm) ||
+                    p.ThuongHieu.Contains(searchTerm) ||
+                    p.KieuDang.Contains(searchTerm) ||
+                    p.ChatLieu.Contains(searchTerm)
+                );
             }
 
-            if (!string.IsNullOrEmpty(childCategory))
-            {
-                var categoryId = db.DANHMUCs
-                    .Where(dm => dm.TenDM == childCategory)
-                    .Select(dm => dm.MaDM)
-                    .FirstOrDefault();
+            var productList = products.ToList();
 
-                products = products.Where(p => p.MaDM == categoryId);
-            }
+            // Load danh sách thương hiệu cho filter/menu nếu có
+            ViewBag.ThuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                                .Select(s => s.ThuongHieu)
+                                                .Distinct()
+                                                .ToList();
 
-            return View("Index", products.ToList());
+            // Truyền lại giá trị search để giữ nguyên input
+            ViewBag.SearchTerm = searchTerm;
+
+            return View("Index", productList);
         }
 
+        //public ActionResult DanhMuc()
+        //{
+        //    // Lấy danh sách distinct các ThuongHieu
+        //    var thuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+        //                        .Select(s => s.ThuongHieu)
+        //                        .Distinct()
+        //                        .ToList();
+
+        //    // Tương tự cho KieuDang và ChatLieu
+        //    var kieuDangList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+        //                        .Select(s => s.KieuDang)
+        //                        .Distinct()
+        //                        .ToList();
+
+        //    var chatLieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+        //                        .Select(s => s.ChatLieu)
+        //                        .Distinct()
+        //                        .ToList();
+
+        //    // Truyền qua ViewBag
+        //    ViewBag.ThuongHieuList = thuongHieuList;
+        //    ViewBag.KieuDangList = kieuDangList;
+        //    ViewBag.ChatLieuList = chatLieuList;
+
+        //    return View();
+        //}
+        private void LoadSidebarData()
+        {
+            ViewBag.ThuongHieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                    .Select(s => s.ThuongHieu)
+                                    .Distinct()
+                                    .ToList();
+
+            ViewBag.KieuDangList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                    .Select(s => s.KieuDang)
+                                    .Distinct()
+                                    .ToList();
+
+            ViewBag.ChatLieuList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                    .Select(s => s.ChatLieu)
+                                    .Distinct()
+                                    .ToList();
+
+            ViewBag.MauSPList = db.SANPHAMs.Where(s => s.IsDeleted == false)
+                                  .Select(s => s.MauSP)
+                                  .Distinct()
+                                  .ToList();
+
+            ViewBag.SizeList = db.SIZEs.Select(s => s.TenSize)
+                                  .Distinct()
+                                  .OrderBy(s => s)
+                                  .ToList();
+        }
+
+        public ActionResult SanPhamTheoThuongHieu(string thuongHieu)
+        {
+            var sp = db.SANPHAMs.Where(s => s.ThuongHieu == thuongHieu && s.IsDeleted == false).ToList();
+            LoadSidebarData();
+            return View("Index", sp);
+        }
+        public ActionResult SanPhamTheoKieuDang(string kieuDang)
+        {
+            var sp = db.SANPHAMs.Where(s => s.KieuDang == kieuDang && s.IsDeleted == false).ToList();
+            LoadSidebarData();
+            return View("Index", sp);
+        }
+
+        public ActionResult SanPhamTheoChatLieu(string chatLieu)
+        {
+            var sp = db.SANPHAMs.Where(s => s.ChatLieu == chatLieu && s.IsDeleted == false).ToList();
+            LoadSidebarData();
+            return View("Index", sp);
+        }
+        public ActionResult SanPhamTheoGia(int min, int max)
+        {
+            var sp = db.SANPHAMs.Where(s => s.GiaSP >= min && s.GiaSP <= max && s.IsDeleted == false).ToList();
+            LoadSidebarData();
+            return View("Index", sp);
+        }
+
+        // Action để thêm sản phẩm vào giỏ hàng
+
+        [HttpPost]
+        // Thêm sản phẩm vào giỏ hàng
+        public JsonResult AddToCart(string maSP, int maSize, int SoLuong)
+        {
+            string maKH = Session["MaKH"] as string;
+            if (string.IsNullOrEmpty(maKH))
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập." });
+            }
+
+            // Kiểm tra sản phẩm tồn tại
+            var sanPham = db.SANPHAMs.FirstOrDefault(sp => sp.MaSP == maSP && sp.IsDeleted == false);
+            if (sanPham == null)
+            {
+                return Json(new { success = false, message = "Sản phẩm không tồn tại." });
+            }
+
+            // Kiểm tra tồn kho
+            var tonKho = db.CHITIETSIZEs.FirstOrDefault(ct => ct.MaSP == maSP && ct.MaSize == maSize);
+            if (tonKho == null || tonKho.SoLuong <= 0)
+            {
+                return Json(new { success = false, message = "Size hoặc sản phẩm đã hết hàng." });
+            }
+
+            if (SoLuong <= 0)
+            {
+                return Json(new { success = false, message = "Số lượng không hợp lệ." });
+            }
+
+            if (SoLuong > tonKho.SoLuong)
+            {
+                return Json(new { success = false, message = "Số lượng vượt quá tồn kho." });
+            }
+
+            // Kiểm tra giỏ hàng
+            var gioHang = db.GIOHANGs.FirstOrDefault(gh => gh.MaKH == maKH && gh.MaSP == maSP && gh.MaSize == maSize);
+
+            if (gioHang != null)
+            {
+                int tongSoLuong = gioHang.SoLuong + SoLuong;
+                if (tongSoLuong <= tonKho.SoLuong)
+                {
+                    gioHang.SoLuong = tongSoLuong;
+                    gioHang.ThanhTien = gioHang.SoLuong * sanPham.GiaSP;
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Số lượng cộng dồn vượt quá tồn kho." });
+                }
+            }
+            else
+            {
+                gioHang = new GIOHANG
+                {
+                    MaKH = maKH,
+                    MaSP = maSP,
+                    MaSize = maSize,
+                    SoLuong = SoLuong,
+                    ThanhTien = sanPham.GiaSP * SoLuong
+                };
+                db.GIOHANGs.InsertOnSubmit(gioHang);
+            }
+
+            try
+            {
+                db.SubmitChanges();
+                return Json(new { success = true, message = "Thêm vào giỏ hàng thành công." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Đã xảy ra lỗi: " + ex.Message });
+            }
+        }
+     
+        
         public ActionResult DangXuat()
         {
             // Xóa session và chuyển hướng về trang đăng nhập
             Session["TenKH"] = null;
             return RedirectToAction("Index", "Home");
         }
-        // Action xử lý điều hướng khi bấm vào "LAPTOP GO"
+        // Action xử lý điều hướng khi bấm vào "SHOP ALY"
 
 
     }

@@ -20,7 +20,7 @@ namespace CUAHANGGIAY.Controllers
             string defaultDbName = "QLSHOPGIAY";
 
             // Xây dựng connection string
-            string connectionString = $"Data Source=YENNGTH-0803\\MSSQLSERVER01;Initial Catalog=QLSHOPGIAY;Integrated Security=True";
+            string connectionString = $"Data Source={serverName}\\SQLEXPRESS;Initial Catalog={defaultDbName};Integrated Security=True;TrustServerCertificate=True";
 
             // Khởi tạo DataContext với connection string
             _danhMucContext = new DataDataContext(connectionString);

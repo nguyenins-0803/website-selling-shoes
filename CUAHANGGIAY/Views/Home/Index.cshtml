@@ -2,143 +2,166 @@
 @model List<CUAHANGGIAY.Models.SANPHAM>
 
 @{
-    ViewBag.Title = "Cửa hàng Laptop";
+    ViewBag.Title = "Cửa hàng Giay";
     Layout = "~/Views/Shared/Layout_KH.cshtml";
 }
 
 @{
-    var parentCategories = ViewBag.ParentCategories as List<string> ?? new List<string>();
-    var childCategories = ViewBag.ChildCategories as List<DANHMUC> ?? new List<DANHMUC>();
-    var selectedParentCategory = ViewBag.SelectedParentCategory as string;
-    var selectedChildCategory = ViewBag.SelectedChildCategory as string;
+    var parentCategories = ViewBag.ParentCategories as List<string>;
+    var childCategories = ViewBag.ChildCategories as List<DANHMUC>;
+    var selectedParentCategory = ViewBag.SelectedParentCategory;
+    var selectedChildCategory = ViewBag.SelectedChildCategory;
 }
+
 
 <head>
     <style>
-        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Search Bar */
-        .search-bar {
-            background-color: #f8f9fa;
-            padding: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fffafc;
+            color: #333;
         }
 
         /* Sidebar */
         .sidebar {
-            background-color: #f8f9fa;
+            background-color: #fff8e1; /* Màu vàng sáng */
+            border-radius: 12px;
             padding: 20px;
+            margin: 10px 15px;
+            box-shadow: 0 4px 6px rgba(255, 223, 0, 0.2);
+            /*            text-align: center;*/
         }
 
-        .nav-link {
-            color: #333;
-        }
-
-            .nav-link.active, .nav-link:hover {
-                background-color: #e9ecef;
+            .sidebar h4 {
+                margin-bottom: 20px;
+                font-weight: bold;
+                text-align: center;
             }
 
-        /* Product List */
-        .products {
-            padding: 20px;
+            /*            .sidebar .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }*/
+
+            /*.sidebar .nav-item {*/
+            /*                text-align: center;*/
+            /*margin: 5px;
+            }*/
+
+
+            .sidebar h4 {
+                font-weight: bold;
+                color: #000; /* Đổi màu tiêu đề danh mục cha con thành màu đen */
+                margin-bottom: 15px;
+            }
+
+        .form-control,
+        select {
+            border-radius: 8px;
+            border: 1px solid #ffeb3b; /* Đổi màu border thành vàng sáng */
         }
 
+        /* Nút */
+        .btn-outline-success {
+            color: #d4a700; /* Màu vàng đậm hơn */
+            border-color: #d4a700; /* Màu vàng đậm hơn */
+        }
+
+            .btn-outline-success:hover {
+                background-color: #ffbb33; /* Màu vàng đậm khi hover */
+                color: white;
+            }
+
+        /* Card sản phẩm */
         .card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
             .card:hover {
-                transform: translateY(-5px); /* Hiệu ứng hover */
+                transform: translateY(-8px);
             }
-
-        .container-fluid {
-            padding: 0;
-        }
-
-        .row {
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        .search-bar {
-            padding: 10px 20px;
-        }
-
-        .sidebar {
-            padding: 20px 10px;
-        }
-
-        .products {
-            padding: 20px;
-        }
 
         .card-img-top {
-            height: 200px;
+            height: 220px;
             object-fit: cover;
+            border-bottom: 1px solid #f8d7da;
         }
 
-        /* Tạo lớp mới để điều chỉnh độ rộng của cột tìm kiếm */
-        .search-col {
-            width: 100%;
-        }
-        /* Định dạng chung cho nút */
-        .btn-custom {
-            padding: 10px 20px;
-            font-size: 14px; /* Đảm bảo kích thước chữ vừa phải */
-            font-weight: bold;
+        /* Nội dung sản phẩm */
+        .card-body {
+            padding: 15px;
             text-align: center;
-            border-radius: 5px; /* Đảm bảo góc bo tròn */
-            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
-            min-width: 150px; /* Đảm bảo chiều rộng cố định */
         }
 
-        /* Nút chi tiết */
-        .btn-detail {
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #007bff;
-            padding: 10px 20px; /* Đảm bảo nút có padding */
-            font-size: 14px;
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
-            /* Nút chi tiết khi hover */
-            .btn-detail:hover {
-                background-color: #0056b3;
-                border-color: #0056b3;
-                transform: scale(1.05);
-            }
-
-        /* Nút thêm giỏ hàng */
-        .btn-cart {
-            background-color: #28a745;
-            color: white;
-            border: 1px solid #28a745;
-            padding: 10px 20px; /* Đảm bảo padding nút */
-            font-size: 14px;
+        .card-text {
+            color: #ffb300; /* Màu vàng đậm cho giá */
+            font-size: 1rem;
+            font-weight: bold;
         }
 
-            /* Nút thêm giỏ hàng khi hover */
-            .btn-cart:hover {
-                background-color: #218838;
-                border-color: #218838;
-                transform: scale(1.05);
-            }
-
-        /* Bố cục hai nút */
+        /* Nút trong sản phẩm */
         .button-group {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
+            justify-content: space-around;
+            margin-top: 10px;
         }
 
+        .btn-detail {
+            background-color: #f1a800; /* Màu vàng đậm cho nút chi tiết */
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+        }
+    
+            .btn-detail:hover {
+                background-color: #f57f17; /* Màu vàng đậm hơn khi hover */
+            }
+
+        .btn-cart {
+            background-color: #f57f17; /* Màu vàng đậm cho nút thêm vào giỏ hàng */
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+        }
+
+            .btn-cart:hover {
+                background-color: #e65100; /* Màu vàng cam đậm hơn khi hover */
+            }
+        /* Đặt màu đen cho tên danh mục cha và con */
+        .sidebar h4,
+        .sidebar ul li {
+            color: #000; /* Màu đen */
+        }
+
+        /* Nếu có lớp khác cho danh mục cha con */
+        .sidebar .parent-category,
+        .sidebar .child-category {
+            color: #000; /* Màu đen */
+        }
+
+        /* Nếu có các liên kết trong danh mục cha con */
+        .sidebar a {
+            color: #000; /* Màu đen cho các liên kết */
+            text-decoration: none; /* Nếu bạn muốn bỏ gạch chân */
+        }
+
+            .sidebar a:hover {
+                color: #d4a700; /* Màu vàng khi hover */
+            }
     </style>
 </head>
 
@@ -147,169 +170,231 @@
     <div class="row search-bar">
         <div class="col-md-12">
             <form action="@Url.Action("SearchProducts", "Home")" method="get" class="d-flex">
-                <input class="form-control me-2" type="search" name="searchTerm" placeholder="Tìm kiếm sản phẩm..." aria-label="Search">
-                @if (!string.IsNullOrEmpty(selectedChildCategory))
-                {
-                    <input type="hidden" name="childCategory" value="@selectedChildCategory" />
-                }
+                <input class="form-control me-2" type="search" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm theo tên, hãng, kiểu dáng, chất liệu..." aria-label="Search" />
                 <button class="btn btn-outline-success" type="submit">Tìm</button>
             </form>
         </div>
     </div>
-
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 sidebar">
-            <h4>Danh Mục Sản Phẩm</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseNhuCau">
-                        Nhu cầu
-                    </a>
-                    <ul id="collapseNhuCau" class="nav flex-column collapse">
-                        <!-- Danh mục con của Nhu cầu sẽ hiển thị ở đây -->
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseHang">
-                        Hãng
-                    </a>
-                    <ul id="collapseHang" class="nav flex-column collapse">
-                        <!-- Danh mục con của Hãng sẽ hiển thị ở đây -->
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseKhoangGia">
-                        Khoảng giá
-                    </a>
-                    <ul id="collapseKhoangGia" class="nav flex-column collapse">
-                        <!-- Danh mục con của Khoảng giá sẽ hiển thị ở đây -->
-                    </ul>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Product List -->
-        <div class="col-md-9 products">
-            <div class="row">
-                @if (Model.Any())
-                {
-                    foreach (var product in Model)
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4>Danh Mục Sản Phẩm</h4>
+        <ul class="nav d-flex justify-content-between">
+            <li class="nav-item ">
+                <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseThuongHieu">
+                    Thương Hiệu
+                </a>
+                <ul id="collapseThuongHieu" class="flex-column collapse">
+                    @foreach (var item in ViewBag.ThuongHieuList)
                     {
-                        <div class="col-md-3 mb-4">
-                            <div class="card h-100">
-                                <img src="@Url.Content(product.AnhMinhHoa ?? "~/Images/default.jpg")" class="card-img-top" alt="@product.TenSP">
-                                <div class="card-body">
-                                    <h5 class="card-title">@product.TenSP</h5>
-                                    <p class="card-text text-danger">@product.GiaSP.ToString("N0") VND</p>
-                                    <div class="button-group">
-                                        <a href="@Url.Action("Details", "SanPham", new { id = product.MaSP })" class="btn btn-primary btn-sm btn-detail">Chi tiết</a>
-                                        <a href="javascript:void(0);" onclick="addToCart('@product.MaSP')" class="btn btn-primary btn-sm btn-cart">Thêm giỏ hàng</a>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("SanPhamTheoThuongHieu", "Home", new { thuongHieu = item })">@item</a>
+                        </li>
+                    }
+                </ul>
+            </li>
+
+            <li class="nav-item ">
+                <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseKieuDang">
+                    Kiểu Dáng
+                </a>
+                <ul id="collapseKieuDang" class="flex-column collapse">
+                    @foreach (var item in ViewBag.KieuDangList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("SanPhamTheoKieuDang", "Home", new { kieuDang = item })">@item</a>
+                        </li>
+                    }
+                </ul>
+            </li>
+
+            <li class="nav-item ">
+                <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseChatLieu">
+                    Chất Liệu
+                </a>
+                <ul id="collapseChatLieu" class="flex-column collapse">
+                    @foreach (var item in ViewBag.ChatLieuList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("SanPhamTheoChatLieu", "Home", new { chatLieu = item })">@item</a>
+                        </li>
+                    }
+                </ul>
+            </li>
+            <!-- Giá Tiền -->
+            <li class="nav-item ">
+                <a href="#" class="nav-link" data-toggle="collapse" data-target="#collapseGiaTien">
+                    Giá Tiền
+                </a>
+                <ul id="collapseGiaTien" class="flex-column collapse">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("SanPhamTheoGia", "Home", new { min = 0, max = 999999 })">Dưới 1 triệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("SanPhamTheoGia", "Home", new { min = 1000000, max = 2000000 })">1 - 2 triệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("SanPhamTheoGia", "Home", new { min = 2000000, max = 5000000 })">2 - 5 triệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("SanPhamTheoGia", "Home", new { min = 5000000, max = 999999999 })">Trên 5 triệu</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <div class="container py-4">
+
+        <div class="row">
+            <!-- Sidebar Left: Lọc Sản Phẩm -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h4>Lọc Sản Phẩm</h4>
+                    <form id="filterForm" method="get" action="@Url.Action("Filter", "Home")">
+
+                        <div>
+                            <label for="sizeFilter">Size</label>
+                            <select id="sizeFilter" name="sizeFilter" class="form-control">
+                                <option value="">Chọn Size</option>
+                                @foreach (var size in (ViewBag.SizeList as List<string>) ?? new List<string>())
+                                {
+                                    <option value="@size" @(ViewBag.SelectedSize == size ? "selected" : "")>@size</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Màu sắc -->
+                        <div>
+                            <label for="mauSP">Chọn Màu</label>
+                            <select id="mauSP" name="mauSP" class="form-control">
+                                <option value="">Tất Cả Màu</option>
+                                @foreach (var color in ViewBag.MauSPList as List<string>)
+                                {
+                                    <option value="@color" @(ViewBag.SelectedColor == color ? "selected" : "")>@color</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Kiểu dáng -->
+                        <div>
+                            <label for="kieuDang">Kiểu Dáng</label>
+                            <select name="kieuDang" class="form-control">
+                                <option value="">Tất Cả Kiểu</option>
+                                @foreach (var style in ViewBag.KieuDangList as List<string>)
+                                {
+                                    <option value="@style" @(ViewBag.SelectedStyle == style ? "selected" : "")>@style</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Chất liệu -->
+                        <div>
+                            <label for="chatLieu">Chất Liệu</label>
+                            <select name="chatLieu" class="form-control">
+                                <option value="">Tất Cả Chất Liệu</option>
+                                @foreach (var material in ViewBag.ChatLieuList as List<string>)
+                                {
+                                    <option value="@material" @(ViewBag.SelectedMaterial == material ? "selected" : "")>@material</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Thương hiệu -->
+                        <div>
+                            <label for="thuongHieu">Thương Hiệu</label>
+                            <select name="thuongHieu" class="form-control">
+                                <option value="">Tất Cả Thương Hiệu</option>
+                                @foreach (var brand in ViewBag.ThuongHieuList as List<string>)
+                                {
+                                    <option value="@brand" @(ViewBag.SelectedBrand == brand ? "selected" : "")>@brand</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Sắp xếp -->
+                        <div>
+                            <label for="sortBy">Sắp Xếp</label>
+                            <select name="sortBy" class="form-control">
+                                <option value="">Sắp xếp theo</option>
+                                <option value="PriceAsc" @(ViewBag.SelectedSort == "PriceAsc" ? "selected" : "")>Giá tăng dần</option>
+                                <option value="PriceDesc" @(ViewBag.SelectedSort == "PriceDesc" ? "selected" : "")>Giá giảm dần</option>
+                                <option value="NameAsc" @(ViewBag.SelectedSort == "NameAsc" ? "selected" : "")>Tên A - Z</option>
+                                <option value="NameDesc" @(ViewBag.SelectedSort == "NameDesc" ? "selected" : "")>Tên Z - A</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="submit" class="btn btn-outline-success">Lọc</button>
+                            <button type="button" id="resetFilter" class="btn btn-outline-secondary">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Product List Right: Danh sách Sản Phẩm -->
+            <div class="col-md-9">
+                <div class="products">
+                    <div class="row">
+                        @if (Model.Any())
+                        {
+                            foreach (var product in Model)
+                            {
+                                <script>console.log(product)</script>
+                                <div class="col-md-4 mb-4">
+                                    <!-- Change col-md-12 to col-md-4 to create 3 columns -->
+                                    <div class="card h-100">
+                                        <img src="@Url.Content(product.AnhMinhHoa ?? "~/Images/default.jpg")" class="card-img-top" alt="@product.TenSP">
+                                        <div class="card-body">
+                                            <h5 class="card-title">@product.TenSP</h5>
+                                            <p class="card-text text-danger">@product.GiaSP.ToString("N0") VND</p>
+                                            <div class="button-group">
+                                                <a href="@Url.Action("Details", "SanPham", new { id = product.MaSP })" class="btn btn-primary btn-sm btn-detail">Chi tiết</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-center text-muted">Không có sản phẩm nào phù hợp.</p>
-                }
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted">Không có sản phẩm nào phù hợp.</p>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
+
 <script>
-    $(document).ready(function () {
-        $(".nav-link[data-toggle='collapse']").click(function (e) {
-            e.preventDefault();
-            var danhMucCha = $(this).text().trim();
-            var ul = $(this).siblings("ul");
+    function addToCart(productId, sizeId) {
+        var quantity = parseInt(document.getElementById("quantity").value);
 
-            // Kiểm tra xem danh sách con có đang được tải hay không
-            if (!ul.hasClass("loaded")) {
-                // Gọi AJAX để tải danh mục con nếu chưa tải
-                $.ajax({
-                    url: '@Url.Action("GetDanhMucCon", "Home")',
-                    type: 'GET',
-                    data: { danhMucCha: danhMucCha },
-                    success: function (response) {
-                        ul.empty();
-
-                        if (response.data.length > 0) {
-                            response.data.forEach(function (item) {
-                                ul.append('<li class="nav-item"><a href="#" class="nav-link child-category" data-category-id="' + item.MaDM + '">' + item.TenDM + '</a></li>');
-                            });
-                        } else {
-                            ul.append('<li class="nav-item">Không có danh mục con</li>');
-                        }
-
-                        ul.addClass("loaded");
-                        ul.collapse("show");
-                    },
-                    error: function () {
-                        alert("Lỗi khi lấy danh mục con!");
-                    }
-                });
-            } else {
-                ul.collapse("toggle");
+        $.ajax({
+            url: '@Url.Action("AddToCart", "Home")',
+            type: 'POST',
+            data: {
+                maSP: productId,
+                maSize: sizeId,
+                SoLuong: quantity
+            },
+            success: function (response) {
+                alert(response.message);
+            },
+            error: function () {
+                alert("Có lỗi xảy ra. Vui lòng thử lại.");
             }
         });
-        $(document).on('click', '.btn-cart', function () {
-            // Xử lý thêm vào giỏ hàng
-        });
-
-        $(document).on('click', '.btn-detail', function () {
-            // Xử lý chi tiết sản phẩm
-        });
-
-        // Sự kiện khi nhấn vào danh mục con
-     $(document).on("click", ".child-category", function (e) {
-    e.preventDefault();
-         var categoryId = $(this).data("category-id");
-
-
-    $.ajax({
-        url: '@Url.Action("GetProductsByCategory", "Home")',
-        type: 'GET',
-        data: { categoryId: categoryId },
-        success: function (response) {
-            var productsContainer = $(".products .row");
-            productsContainer.empty();
-
-            if (response.data.length > 0) {
-                response.data.forEach(function (product) {
-                    productsContainer.append(`
-                        <div class="col-md-3 mb-4">
-                            <div class="card h-100">
-                                <img src="${product.AnhMinhHoa || '~/Images/default.jpg'}" class="card-img-top" alt="${product.TenSP}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${product.TenSP}</h5>
-                                    <p class="card-text text-danger">${product.GiaSP.toLocaleString()} VND</p>
-                                    <a href="/SanPham/Details/${product.MaSP}" class="btn btn-primary btn-sm btn-detail">Chi tiết</a>
-                                    <a href="javascript:void(0);" onclick="addToCart('${product.MaSP}')" class="btn btn-primary btn-sm btn-cart">Thêm giỏ hàng</a>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-                });
-            } else {
-                productsContainer.append('<p class="text-center text-muted">Không có sản phẩm nào phù hợp.</p>');
-            }
-        },
-        error: function () {
-            alert("Lỗi khi lấy sản phẩm!");
-        }
-    });
-});
-
-    });
-
-    function addToCart(productId) {
-        // Đoạn mã JavaScript thêm sản phẩm vào giỏ hàng
-        console.log("Thêm sản phẩm vào giỏ hàng: " + productId);
     }
+
+</script>
+<script>
+    document.getElementById("resetFilter").addEventListener("click", function () {
+        window.location.href = '@Url.Action("Filter", "Home")';
+    });
 </script>

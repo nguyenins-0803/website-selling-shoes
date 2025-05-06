@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "Thống Kê Đơn Hàng";
+    var thongKe = ViewBag.ThongKe;
+}
+
+<h2>Thống kê đơn hàng</h2>
+
+<div style="display: flex; gap: 20px;">
+    <div>
+        <h4>Tổng số đơn hàng đã đặt: @thongKe.TongSoDonHang</h4>
+    </div>
+    <div>
+        <h4>Tổng số đơn hoàn thành: @thongKe.TongSoDonHoanThanh</h4>
+    </div>
+    <div>
+        <h4>Tổng giá trị các đơn hàng: @thongKe.TongGiaTri.ToString("N0") VNĐ</h4>
+    </div>
+</div>
